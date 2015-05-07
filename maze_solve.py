@@ -28,12 +28,23 @@ def steer(ack=True):
         get_sensor_value()
         print "Steer_complete."
 
+def get_steer_command(steer_left, angle=90, speed=25 ):
+
+    if steer_left:
+        return get_left_command(angle - ERROR, speed)
+    else:
+        return get_right_command(angle - ERROR, speed)
+
+
+
+
 def get_cells_travelled(t):
     c = int(t/(2*HALF_CELL_TIME))
     if c < SIZE:
         return c
     else:
         return SIZE -1
+
 
 def move_forward():
     t = get_bump_time();
@@ -86,7 +97,6 @@ def get_next(maze, curr, straight):
     else:
         while (curr[1] + c) < SIZE and maze[curr[0]][curr[1] + c] == 1:
             c += 1
-
     return c-1
 
 
@@ -95,28 +105,34 @@ def get_next(maze, curr, straight):
 
 def solve_fast(maze):
 
-    global STRAIGHT, STEER_LEFT
+    straight = True
+    steer_left = True
 
-    STRAIGHT = True
-    STEER_LEFT = True
-
-    acknowledge_steer = False
-
-    done = False
     curr = [0,0]
-
+    cmd = ""
     while not (curr[0] == 2 and curr[1] == 2):
-        c = get_next(maze, curr, STRAIGHT)
+        print curr
+        c = get_next(maze, curr, straight)
         if c > 0:
             print "Straight ", c
-            execute(get_forward_command(c*(CELL_WIDTH), 50))
-            if STRAIGHT:
+            # execute(get_forward_command(c*(CELL_WIDTH), 50))
+            cmd += get_forward_command(c*(CELL_WIDTH), 50) + " "
+            if straight:
                 curr[0] += c
             else:
                 curr[1] += c
 
-        steer(acknowledge_steer)
+        # steer()
+        cmd += get_steer_command(steer_left) + " "
+        print straight, steer_left
+        straight = not straight
+        steer_left = not steer_left
 
+        # sleep(1)
+
+    cmd = cmd.rstrip()
+    print cmd
+    execute (cmd)
     print "Solving fast"
 
 
