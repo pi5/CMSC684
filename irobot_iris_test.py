@@ -40,7 +40,7 @@ def get_forward_command(distance=55, speed=20):
 	return drive + wait + stop
 
 
-def forward_until_bump(speed=40):
+def forward_until_bump(speed=25):
 
 	speed_high, speed_low = get_bytes(speed*10)
 
@@ -51,7 +51,24 @@ def forward_until_bump(speed=40):
 	return drive + wait + stop
 
 
-def back_off(speed=-25, distance=-30):
+# Move forward until you bump and get travelled time
+def get_bump_time():
+	start_time = time.time()
+	execute(forward_until_bump())
+	get_sensor_value()
+	end_time = time.time()
+	execute(back_off())
+
+	return (end_time - start_time)
+
+
+def back_off(speed=-25, distance=-10):
+
+	if (speed > 0):
+		speed = -speed
+
+	if distance > 0:
+		distance = -distance
 
 	speed_high, speed_low = get_bytes(speed*10)
 	dist_high, dist_low = get_bytes(distance*10)
@@ -73,7 +90,11 @@ def get_left_command(angle=90, speed=25):
 
 	return drive + wait + stop
 
+
 def get_right_command(angle=-90, speed=25):
+
+	if (angle > 0):
+		angle = -angle
 
 	angle_high, angle_low = get_bytes(angle)
 	speed_high, speed_low = get_bytes(speed*10)
@@ -84,13 +105,15 @@ def get_right_command(angle=-90, speed=25):
 
 	return drive + wait + stop
 
+
 def get_uturn_command():
 	return get_right_command() + " " + get_right_command()
 
 
+
 def get_sensor_value():
 	ser = serial.Serial('/dev/ttyUSB1', 57600, timeout=8)
-	print ser.name
+	# print ser.name
 	ser.write(chr(128)) # 128 is Start command
 	ser.write(chr(132)) # 131 is Safe mode command, 132 is full mode
 	action = "142 7"
@@ -103,7 +126,7 @@ def get_sensor_value():
 	x = ser.read()
 	for i in x:
 		val = struct.unpack('B', i)[0]
-		print val
+		#print val
 
 	ser.close
 
@@ -116,7 +139,7 @@ def execute(action):
 	# which port was avaliable when you plugged in the device.
 	# 57600 is the default serial speed on the iris motes.
 	ser = serial.Serial('/dev/ttyUSB1', 57600, timeout=5)
-	print ser.name
+	# print ser.name
 	ser.write(chr(128)) # 128 is Start command
 	ser.write(chr(132)) # 131 is Safe mode command
 
@@ -128,8 +151,5 @@ def execute(action):
 	ser.close
 
 
-execute(get_forward_command(50,50))
-# execute(get_left_command())
 
-
-print "done..."
+# print "done..."
