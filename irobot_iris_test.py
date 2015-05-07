@@ -8,54 +8,128 @@
 import serial
 from time import sleep
 import struct
+import sys
+import time
 
-# Open the serial port to communicate with iris gateway
-# default port is /dev/ttyUSB1, but it can cange based on
-# which port was avaliable when you plugged in the device.
-# 57600 is the default serial speed on the iris motes.
-ser = serial.Serial('/dev/ttyUSB1', 57600, timeout=5)
-print ser.name
+CELL_SIZE = 55
 
-# Send serial command that the iRobot can understand check
-# the "iRobot Create Open Interface_v2.pdf" for more info
-# the commands that can be used to control the robot.
+# Get two's complement of a number represented in 16 bit
+def twos_compl(num):
+    if num >= 0:
+        return num
 
-ser.write(chr(128)) # 128 is Start command
-ser.write(chr(131)) # 131 is Safe mode command
+    else:
+        num = -num
+        return ((pow(2,16) - 1) & ~num) + 1
 
-cmd_seq = [
-"137 1 44 128 0",
-"156 1 44",
-"137 0 0 128 0"
-]
+# Get high and low byte of a 16 bit word
+def get_bytes(integer):
+    return divmod(twos_compl(integer), 0x100)
 
 
+# Function to get move forward command
+def get_forward_command(distance=55, speed=20):
 
-#cmds = [137, 1, 244, 128, 0]
-#cmds = [152, 17, 158, 5, 158, 251, 139, 2, 0, 0, 158, 5, 158, 251, 139, 0, 0, 0, 153]
-for action in cmd_seq:
+	dist_high, dist_low = get_bytes(distance*10)
+	speed_high, speed_low = get_bytes(speed*10)
+
+	drive = "137 " + str(speed_high) + " " + str(speed_low) + " 128 0 "
+	wait = "156 " + str(dist_high) + " " + str(dist_low) + " "
+	stop = "137 0 0 128 0"
+
+	return drive + wait + stop
+
+
+def forward_until_bump(speed=40):
+
+	speed_high, speed_low = get_bytes(speed*10)
+
+	drive = "137 " + str(speed_high) + " " + str(speed_low) + " 128 0 "
+	wait = "158 5 "
+	stop = "137 0 0 128 0"
+
+	return drive + wait + stop
+
+
+def back_off(speed=-25, distance=-30):
+
+	speed_high, speed_low = get_bytes(speed*10)
+	dist_high, dist_low = get_bytes(distance*10)
+
+	drive_back = "137 " + str(speed_high) + " " + str(speed_low) + " 128 0 "
+	wait_reverse = "156 " + str(dist_high) + " " + str(dist_low) + " "
+	stop = "137 0 0 128 0"
+
+	return drive_back + wait_reverse + stop
+
+def get_left_command(angle=90, speed=25):
+
+	angle_high, angle_low = get_bytes(angle)
+	speed_high, speed_low = get_bytes(speed*10)
+
+	drive = "137 " + str(speed_high) + " " + str(speed_low) +  " 0 1 "
+	wait = "157 " + str(angle_high) + " " + str(angle_low) +  " "
+	stop = " 137 0 0 128 0"
+
+	return drive + wait + stop
+
+def get_right_command(angle=-90, speed=25):
+
+	angle_high, angle_low = get_bytes(angle)
+	speed_high, speed_low = get_bytes(speed*10)
+
+	drive = "137 " + str(speed_high) + " " + str(speed_low) +  " 255 255 "
+	wait = "157 " + str(angle_high) + " " + str(angle_low) + " "
+	stop = " 137 0 0 128 0"
+
+	return drive + wait + stop
+
+def get_uturn_command():
+	return get_right_command() + " " + get_right_command()
+
+
+def get_sensor_value():
+	ser = serial.Serial('/dev/ttyUSB1', 57600, timeout=8)
+	print ser.name
+	ser.write(chr(128)) # 128 is Start command
+	ser.write(chr(132)) # 131 is Safe mode command, 132 is full mode
+	action = "142 7"
 	cmds = action.split()
 	for cmd in cmds:
 		ser.write(chr(int(cmd)))
+		time.sleep(0.001)
+
+	val = 0
+	x = ser.read()
+	for i in x:
+		val = struct.unpack('B', i)[0]
+		print val
+
+	ser.close
+
+	return val
 
 
+def execute(action):
+	# Open the serial port to communicate with iris gateway
+	# default port is /dev/ttyUSB1, but it can cange based on
+	# which port was avaliable when you plugged in the device.
+	# 57600 is the default serial speed on the iris motes.
+	ser = serial.Serial('/dev/ttyUSB1', 57600, timeout=5)
+	print ser.name
+	ser.write(chr(128)) # 128 is Start command
+	ser.write(chr(132)) # 131 is Safe mode command
 
-# ser.write(chr(137)) # Drive
-# ser.write(chr(0))   # Velocity high byte (-500 ~ 500 mm/s)
-# ser.write(chr(100)) # Velocity low byte
-# ser.write(chr(128)) # Radius high byte (-2000 ~ 2000 mm)
-# ser.write(chr(0))   # Radius low byte
-#
-# ser.write(chr(156))
-# ser.write(chr(1))
-# ser.write(chr(44))
-# ser.write(chr(137))
-# ser.write(chr(0))
-# ser.write(chr(0))
-# ser.write(chr(128))
-# ser.write(chr(0))
+	cmds = action.split()
+	for cmd in cmds:
+		ser.write(chr(int(cmd)))
+		time.sleep(0.01)
+
+	ser.close
+
+
+execute(get_forward_command(50,50))
+# execute(get_left_command())
+
 
 print "done..."
-
-# close the serial port
-ser.close

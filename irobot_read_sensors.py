@@ -1,5 +1,6 @@
 import serial
 from time import sleep
+import struct
 
 # Open the serial port to communicate with iris gateway
 # default port is /dev/ttyUSB1, but it can cange based on
@@ -17,15 +18,20 @@ ser.write(chr(131)) # 131 is Safe mode command
 
 # Request to real all sensors
 ser.write(chr(142))
-ser.write(chr(6))
+# ser.write(chr(3))
+ser.write(chr(7))
+# ser.write(chr(9))
+# ser.write(chr(13))
 
 # The response from iRobot is 52 bytes long
-x = ser.read(52)
+x = ser.read()
 count = 0
+#print int(x[0])
 for i in x:
 
     print "byte:" + str(count)
-    print i
+    # print format(255,i);
+    print struct.unpack('B', i)[0]
     count = count + 1
 
 # close the serial port
