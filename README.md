@@ -1,6 +1,7 @@
 CMPE/CMSC 684 (Wireless Sensor Networks) project Spring 2015
 
 Maze setup:
+
 1. Create a grid of 165x165 cm such that each cell is 55x55cm. (refer video demo: https://www.youtube.com/watch?v=Z14wJLBolZI)
 
 2. Follow build instructions in IRIS-stuff/IRIS2iRobot_Relay folder 
