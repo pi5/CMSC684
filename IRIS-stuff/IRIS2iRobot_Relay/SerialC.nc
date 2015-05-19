@@ -113,25 +113,31 @@ implementation {
 
 	async event void UartStream.receivedByte(uint8_t byte) {
 
-		atomic if( ! radioFull) {
-			iRobotMsg * btrpkt = (iRobotMsg * )(call Packet
-					.getPayload(radioQueue[radioIn], sizeof(iRobotMsg)));
-
-			btrpkt->nodeid = TOS_NODE_ID;
-			btrpkt->cmd = byte;
-
-			if(++radioIn >= RADIO_QUEUE_LEN)
-				radioIn = 0;
-			if(radioIn == radioOut)
-				radioFull = TRUE;
-
-			if( ! radioBusy) {
-				post SendToRadio();
-				radioBusy = TRUE;
-			}
+		if (byte == 23) {
+			destinationAddress = (destinationAddress == 1) ? 2 : 1;
+			call Leds.led1Toggle();
 		}
-		else
-			Fail(2);
+		else {
+			if( ! radioFull) {
+				iRobotMsg * btrpkt = (iRobotMsg * )(call Packet
+						.getPayload(radioQueue[radioIn], sizeof(iRobotMsg)));
+
+				btrpkt->nodeid = TOS_NODE_ID;
+				btrpkt->cmd = byte;
+
+				if(++radioIn >= RADIO_QUEUE_LEN)
+					radioIn = 0;
+				if(radioIn == radioOut)
+					radioFull = TRUE;
+
+				if( ! radioBusy) {
+					post SendToRadio();
+					radioBusy = TRUE;
+				}
+			}
+			else
+				Fail(2);
+			}
 	}
 
 	void task SendToRadio() {

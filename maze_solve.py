@@ -2,13 +2,17 @@ from irobot_iris_test import *
 
 SIZE = 3
 CELL_SIZE = 55
-ERROR = 2
+ERROR = 3
 
 CELL_WIDTH = CELL_SIZE - ERROR
 HALF_CELL_TIME = 1
 
 STEER_LEFT = True
 STRAIGHT = True
+
+def toggle_robot():
+    # 23 is the toggle command for the base station
+    execute("23")
 
 def steer(ack=True):
 
@@ -27,6 +31,20 @@ def steer(ack=True):
     if ack:
         get_sensor_value()
         print "Steer_complete."
+
+
+def turn_right():
+    execute(get_right_command(90 - ERROR, 25))
+
+
+def turn_left():
+    execute(get_left_command(90 - ERROR, 25))
+
+
+def move_forward_by(cells):
+    execute(get_forward_command(cells*(CELL_WIDTH), 30))
+
+
 
 def get_steer_command(steer_left, angle=90, speed=25 ):
 
@@ -83,9 +101,7 @@ def solve_maze ():
     for x in maze:
         print x
 
-    sleep(5)
-    solve_fast(maze)
-
+    return maze
 
 def get_next(maze, curr, straight):
     if curr[0] == 2 and curr[1] == 2:
@@ -116,7 +132,7 @@ def solve_fast(maze):
         if c > 0:
             print "Straight ", c
             # execute(get_forward_command(c*(CELL_WIDTH), 50))
-            cmd += get_forward_command(c*(CELL_WIDTH), 50) + " "
+            cmd += get_forward_command(c*(CELL_WIDTH), 45) + " "
             if straight:
                 curr[0] += c
             else:
@@ -136,5 +152,32 @@ def solve_fast(maze):
     print "Solving fast"
 
 
-# solve_fast([[1,0,0],[1,1,1],[0,0,1]])
-solve_maze()
+
+# turn_right()
+# turn_left()
+
+
+solution = solve_maze()
+sleep(5)
+solve_fast(solution)
+move_forward_by(1)
+print "Solved First"
+
+
+toggle_robot()
+
+#Take start position
+turn_left()
+move_forward_by(1)
+turn_right()
+
+solve_fast(solution)
+toggle_robot()
+print "Solved second"
+
+
+
+
+
+# move_forward()
+# execute ("23")
