@@ -6,13 +6,14 @@ ERROR = 3
 
 CELL_WIDTH = CELL_SIZE - ERROR
 HALF_CELL_TIME = 1
+TOGGLE_CODE = "23"
 
 STEER_LEFT = True
 STRAIGHT = True
 
 def toggle_robot():
     # 23 is the toggle command for the base station
-    execute("23")
+    execute(TOGGLE_CODE)
 
 def steer(ack=True):
 
@@ -132,29 +133,24 @@ def solve_fast(maze):
         if c > 0:
             print "Straight ", c
             # execute(get_forward_command(c*(CELL_WIDTH), 50))
-            cmd += get_forward_command(c*(CELL_WIDTH), 45) + " "
+            cmd += get_forward_command(c*(CELL_WIDTH), 30) + " "
             if straight:
                 curr[0] += c
             else:
                 curr[1] += c
 
-        # steer()
+
         cmd += get_steer_command(steer_left) + " "
         print straight, steer_left
         straight = not straight
         steer_left = not steer_left
 
-        # sleep(1)
+
 
     cmd = cmd.rstrip()
     print cmd
     execute (cmd)
     print "Solving fast"
-
-
-
-# turn_right()
-# turn_left()
 
 
 solution = solve_maze()
@@ -174,10 +170,3 @@ turn_right()
 solve_fast(solution)
 toggle_robot()
 print "Solved second"
-
-
-
-
-
-# move_forward()
-# execute ("23")
