@@ -2,7 +2,7 @@
 
 ###Setup:
 
-1. Create a grid of 165x165 cm such that each cell is 55x55cm. (refer video demo: https://www.youtube.com/watch?v=Z14wJLBolZI)
+1. Create a grid of 165x165 cm such that each cell is 55x55cm. (refer video demo: https://goo.gl/QcpnOy)
 
 2. Follow build instructions in IRIS-stuff/IRIS2iRobot_Relay folder 
 
@@ -15,5 +15,5 @@
 
 
 **Video Demo:**
-https://www.youtube.com/watch?v=Z14wJLBolZI
+https://goo.gl/QcpnOy
 
