@@ -8,7 +8,7 @@
 
 3. Flash 3 IRIS motes with ids 0, 1 and 2. 
 
-4. Node 0 is becomes the base station and nodes 1 and 2 are explorer and follower respectively
+4. Node 0 plays role of the base station and nodes 1 and 2 are explorer and follower respectively
 
 5. Run maze_solve.py
  
